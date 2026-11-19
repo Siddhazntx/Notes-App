@@ -1,73 +1,69 @@
-# Full-Stack Notes Application
+# Notes App
 
-A secure, responsive, full-stack Notes Application built with React, Node.js, Express, PostgreSQL (Supabase), JWT authentication, and bcrypt password hashing.
+A full-stack notes management application built with React, Node.js, Express, and PostgreSQL (Supabase). It features secure user authentication with JWT, hashed passwords with bcrypt, and complete CRUD operations for personal notes.
+
+- **Live Application:** [https://notes-app-lilac-psi-56.vercel.app/](https://notes-app-lilac-psi-56.vercel.app/)
+- **Demo Video:** [Watch Walkthrough](https://drive.google.com/file/d/1At5I3aA7jgwdF5_3vKHmHkBxnSRbeEZp/view?usp=sharing)
 
 ---
 
-## 1. Tech Stack
+## Features
 
-- **Frontend:** React (Vite), Axios, Plain CSS (Responsive & Mobile-Friendly)
+- **Authentication:** Sign up and log in securely using email and password. Passwords are never stored in plaintext — they're hashed with bcrypt before saving to the database.
+- **Notes Management:** Create, read, edit, and delete notes in real time. Notes are automatically sorted with the newest ones first.
+- **Session Handling:** Uses JSON Web Tokens (JWT) stored in the browser to maintain login state. If a token expires or is invalid, the user is redirected back to the login screen.
+- **Clean UI:** A simple, responsive interface built with vanilla CSS that works seamlessly across desktop and mobile devices.
+
+---
+
+## Privacy
+
+Every user's notes are private. When User A creates a note, only User A can view, edit, or delete it. Other users cannot access that note, even if they know its ID.
+
+Each note is linked to the user who created it, and the backend checks ownership whenever someone tries to access or modify a note. This ensures users can only manage their own notes.
+
+---
+
+## Tech Stack
+
+- **Frontend:** React (Vite), Axios, Plain CSS
 - **Backend:** Node.js, Express
-- **Database:** PostgreSQL (hosted on Supabase) via `pg` (node-postgres)
-- **Authentication:** JSON Web Tokens (JWT) & bcryptjs
-- **Environment Management:** dotenv
+- **Database:** PostgreSQL on Supabase (`pg` library)
+- **Authentication:** JWT (`jsonwebtoken`) & `bcryptjs`
+- **Config:** `dotenv` & `cors`
 
 ---
 
-## 2. Features
-
-- **Authentication:**
-  - User registration with email format & password length validation.
-  - Password hashing with bcrypt (salt rounds = 10).
-  - Duplicate email registration prevention (409 Conflict).
-  - Secure login with JWT issuance (1-day expiration).
-  - Passwords are never exposed or returned in API responses.
-- **Notes Management (CRUD):**
-  - Create notes with title and content.
-  - Read all notes belonging to the authenticated user (sorted newest first).
-  - Update notes with ownership enforcement.
-  - Delete notes with ownership enforcement and frontend confirmation dialog.
-  - Strict data isolation: Users cannot access, edit, or delete notes belonging to other users.
-- **Security:**
-  - Fully parameterized SQL queries (`$1, $2, ...`) preventing SQL injection.
-  - Centralized JWT verification middleware extracting `req.user.id`.
-  - CORS configuration with optional client URL whitelisting.
-  - Global error handling returning clean JSON errors without leaking stack traces.
-
----
-
-## 3. Project Structure
+## Project Structure
 
 ```text
 NotesApp/
 ├── backend/
 │   ├── config/
-│   │   └── db.js               # PostgreSQL connection pool using pg
+│   │   └── db.js               # PostgreSQL pool connection
 │   ├── controllers/
 │   │   ├── authController.js   # Signup, login, validation logic
-│   │   └── noteController.js   # Notes CRUD logic with ownership checks
+│   │   └── noteController.js   # Notes CRUD and user ownership logic
 │   ├── middleware/
 │   │   └── auth.js             # JWT verification middleware
 │   ├── routes/
-│   │   ├── authRoutes.js       # /api/auth routes
-│   │   └── noteRoutes.js       # /api/notes protected routes
-│   ├── .env.example            # Backend environment template
+│   │   ├── authRoutes.js       # /api/auth endpoints
+│   │   └── noteRoutes.js       # /api/notes endpoints (protected)
+│   ├── .env.example
 │   ├── package.json
-│   └── server.js               # Express entry point & middleware setup
+│   └── server.js               # Express app entry point
 ├── frontend/
-│   ├── public/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Auth.jsx        # Login & Signup toggle form
-│   │   │   ├── Dashboard.jsx   # Main authenticated dashboard
-│   │   │   ├── NoteCard.jsx    # Individual note display & action buttons
-│   │   │   └── NoteForm.jsx    # Create / Edit note form
-│   │   ├── api.js              # Axios client with JWT interceptor
-│   │   ├── App.css             # Clean, responsive styles
-│   │   ├── App.jsx             # Session management & routing
-│   │   ├── index.css           # Base CSS reset
+│   │   │   ├── Auth.jsx        # Login & signup form
+│   │   │   ├── Dashboard.jsx   # Main view for notes
+│   │   │   ├── NoteCard.jsx    # Note display and action buttons
+│   │   │   └── NoteForm.jsx    # Create and edit note form
+│   │   ├── api.js              # Axios setup with JWT interceptor
+│   │   ├── App.jsx             # Main container and auth state
+│   │   ├── App.css             # Main styling
 │   │   └── main.jsx
-│   ├── .env.example            # Frontend environment template
+│   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
 ├── .gitignore
@@ -76,12 +72,12 @@ NotesApp/
 
 ---
 
-## 4. Database Schema
+## Database Tables
 
-The application uses two tables in PostgreSQL:
+The application runs on two PostgreSQL tables:
 
 ```sql
--- Users Table
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -89,7 +85,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Notes Table
+-- Notes table
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -102,95 +98,110 @@ CREATE TABLE IF NOT EXISTS notes (
 
 ---
 
-## 5. Environment Variables
+## Local Setup
 
-### Backend (`backend/.env`)
-Create `backend/.env` based on `backend/.env.example`:
+### 1. Prerequisites
+- Node.js (v18+)
+- A PostgreSQL database (e.g. free Supabase tier)
+
+### 2. Backend Setup
+Navigate into the backend directory and install dependencies:
+```bash
+cd backend
+npm install
+```
+
+Create your `.env` file from the example:
+```bash
+cp .env.example .env
+```
+
+Fill in your actual environment variables in `backend/.env`:
 ```env
 PORT=5000
-DATABASE_URL=postgresql://postgres.<project-id>:<password>@<host>:5432/postgres
-JWT_SECRET=your_super_secret_jwt_key
+DATABASE_URL=your_supabase_postgresql_connection_string
+JWT_SECRET=your_random_secret_key
 CLIENT_URL=http://localhost:5173
 ```
 
-### Frontend (`frontend/.env`)
-Create `frontend/.env` based on `frontend/.env.example`:
+Start the backend server:
+```bash
+npm run dev
+```
+The server will run on `http://localhost:5000`.
+
+### 3. Frontend Setup
+Open a second terminal, navigate into the frontend directory, and install dependencies:
+```bash
+cd frontend
+npm install
+```
+
+Create your `.env` file from the example:
+```bash
+cp .env.example .env
+```
+
+Your `frontend/.env` should point to your local backend:
 ```env
 VITE_API_URL=http://localhost:5000
 ```
 
----
-
-## 6. Local Setup Instructions
-
-### Prerequisites
-- Node.js (v18 or higher)
-- PostgreSQL database (e.g. Supabase instance)
-
-### Backend Setup
-1. Open a terminal and navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up the `.env` file with your database connection string and secret key:
-   ```bash
-   cp .env.example .env
-   ```
-4. Start the backend server in development mode:
-   ```bash
-   npm run dev
-   ```
-   The backend server will run on `http://localhost:5000`.
-
-### Frontend Setup
-1. Open a new terminal and navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up `.env` (optional for local, defaults to `http://localhost:5000`):
-   ```bash
-   cp .env.example .env
-   ```
-4. Start the frontend development server:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:5173` in your browser.
+Start the Vite development server:
+```bash
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
 
 ---
 
-## 7. API Endpoints
+## API Endpoints
 
-### Authentication
-| Method | Endpoint | Description | Auth Required | Request Body |
-|---|---|---|---|---|
-| POST | `/api/auth/signup` | Register new user | No | `{ "email": "...", "password": "..." }` |
-| POST | `/api/auth/login` | Login and receive JWT | No | `{ "email": "...", "password": "..." }` |
-| GET | `/api/auth/me` | Verify JWT and return user ID | Yes (Bearer) | None |
-
-### Notes
-| Method | Endpoint | Description | Auth Required | Request Body |
-|---|---|---|---|---|
-| GET | `/api/notes` | Get all notes of logged-in user | Yes (Bearer) | None |
-| POST | `/api/notes` | Create a new note | Yes (Bearer) | `{ "title": "...", "content": "..." }` |
-| PUT | `/api/notes/:id` | Update an existing note | Yes (Bearer) | `{ "title": "...", "content": "..." }` |
-| DELETE | `/api/notes/:id` | Delete a note | Yes (Bearer) | None |
-
-### System
-| Method | Endpoint | Description | Auth Required |
+### Auth Routes
+| Method | Endpoint | Description | Requires Token |
 |---|---|---|---|
-| GET | `/health` | Server health check | No |
+| POST | `/api/auth/signup` | Register a new user | No |
+| POST | `/api/auth/login` | Authenticate user and receive JWT | No |
+| GET | `/api/auth/me` | Fetch currently authenticated user | Yes |
+
+### Notes Routes
+| Method | Endpoint | Description | Requires Token |
+|---|---|---|---|
+| GET | `/api/notes` | Get all notes for the logged-in user | Yes |
+| POST | `/api/notes` | Create a new note | Yes |
+| PUT | `/api/notes/:id` | Update a note (must be owner) | Yes |
+| DELETE | `/api/notes/:id` | Delete a note (must be owner) | Yes |
+
+### Health Check
+| Method | Endpoint | Description | Requires Token |
+|---|---|---|---|
+| GET | `/health` | Check if server is running | No |
 
 ---
 
+## How I Deployed the App
 
+Here is how I set up and deployed the application:
 
+### 1. Database (Supabase)
+- Set up a cloud PostgreSQL database on [Supabase](https://supabase.com/).
+- Created the `users` and `notes` tables with appropriate constraints (unique emails, primary keys, and cascade deletion for user notes).
+- Extracted the PostgreSQL connection string to connect through the `pg` client.
+
+### 2. Backend (Render)
+- Connected my GitHub repository to [Render](https://render.com/) as a Web Service.
+- Set the root directory to `backend`.
+- Set the build command to `npm install` and start command to `npm start`.
+- Configured the environment variables in Render:
+  - `DATABASE_URL`: Supabase connection string.
+  - `JWT_SECRET`: Secret key for token generation and verification.
+  - `CLIENT_URL`: `https://notes-app-lilac-psi-56.vercel.app` (for CORS).
+  - `PORT`: `5000`
+
+### 3. Frontend (Vercel)
+- Imported the repository into [Vercel](https://vercel.com/).
+- Set the root directory to `frontend` using the Vite preset.
+- Added the environment variable:
+  - `VITE_API_URL`: Set to the deployed backend URL on Render.
+- Deployed the application to [https://notes-app-lilac-psi-56.vercel.app/](https://notes-app-lilac-psi-56.vercel.app/).
 
