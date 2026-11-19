@@ -191,34 +191,6 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-## 8. Deployment Guide
 
-### A. Deploy Backend to Render
 
-1. Push your repository to GitHub.
-2. Sign in to [Render](https://render.com/) and click **New + > Web Service**.
-3. Connect your GitHub repository.
-4. Configure the Web Service settings:
-   - **Root Directory:** `backend`
-   - **Environment:** `Node`
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-5. Under **Environment Variables**, add:
-   - `DATABASE_URL`: Your Supabase connection string.
-   - `JWT_SECRET`: A long random secret string.
-   - `CLIENT_URL`: Your frontend production URL (e.g., `https://your-app.vercel.app`).
-   - `PORT`: `5000` (or leave default, Render sets `PORT` automatically).
-6. Click **Deploy Web Service**.
-7. Note down your Render backend URL (e.g. `https://notes-backend.onrender.com`).
 
-### B. Deploy Frontend to Vercel
-
-1. Sign in to [Vercel](https://vercel.com/) and click **Add New > Project**.
-2. Select your repository.
-3. In the project configuration:
-   - **Framework Preset:** `Vite`
-   - **Root Directory:** Click "Edit" and choose `frontend`.
-4. Under **Environment Variables**, add:
-   - `VITE_API_URL`: Your deployed Render backend URL (e.g., `https://notes-backend.onrender.com`).
-5. Click **Deploy**.
-6. Once deployed, copy your Vercel URL and add it to `CLIENT_URL` in your Render backend settings.
